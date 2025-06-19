@@ -1,0 +1,38 @@
+# .github/workflows/percy-baseline.yml
+name: Percy Baseline Setup
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  create-baseline:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only run on main branch
+    
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Storybook
+        run: npm run build-storybook
+
+      - name: Create Percy Baseline
+        run: |
+          echo "Creating baseline snapshots on main branch..."
+          npx percy storybook ./storybook-static
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+          PERCY_BRANCH: main
+          # Don't set target branch for baseline

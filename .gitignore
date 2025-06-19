@@ -1,0 +1,21 @@
+.DS_Store
+
+*storybook.log
+# Storybook build output
+storybook-static/
+
+# Other common ignores you should also have
+node_modules/
+.next/
+dist/
+build/
+
+# Percy logs (optional)
+.percy/
+
+# Environment variables
+.env.local
+.Environment
+/storybook-static
+/storybook-static
+storybook-static/

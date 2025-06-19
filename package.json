@@ -1,0 +1,45 @@
+{
+  "name": "my-next-storybook-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "build-storybook": "storybook build",
+    "storybook": "storybook dev -p 6006",
+    "percy:storybook": "npx percy storybook ./storybook-static"
+  },
+  "dependencies": {
+    "18": "^0.0.0",
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "next": "15.3.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@percy/cli": "^1.31.0",
+    "@percy/storybook": "^6.0.4",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-interactions": "^8.6.14",
+    "@storybook/addon-links": "^8.6.14",
+    "@storybook/addon-onboarding": "8.6.14",
+    "@storybook/blocks": "^8.6.14",
+    "@storybook/nextjs": "^8.6.14",
+    "@storybook/react": "8.6.14",
+    "@storybook/test": "^8.6.14",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/browser": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "playwright": "^1.53.1",
+    "storybook": "^8.6.14",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  }
+}

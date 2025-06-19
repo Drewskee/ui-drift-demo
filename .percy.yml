@@ -1,0 +1,13 @@
+# .percyrc.yml
+version: 2
+snapshot:
+  widths: [375, 1280]
+  minHeight: 1024
+discovery:
+  allowedHostnames:
+    - localhost
+  networkIdleTimeout: 750
+storybook:
+  # Remove the invalid include pattern
+  waitForTimeout: 2000
+  # Don't specify include - let Percy capture all stories by default

@@ -1,0 +1,137 @@
+name: Percy Visual Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  percy-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Storybook
+        run: |
+          echo "Building Storybook with TypeScript..."
+          npm run build-storybook
+        env:
+          NODE_ENV: production
+
+      - name: Percy Visual Tests
+        id: percy
+        run: |
+          # Use Percy action's reliability but capture our own output
+          npx percy storybook ./storybook-static > percy_output.txt 2>&1 || PERCY_EXIT_CODE=$?
+          
+          cat percy_output.txt
+          
+          # Extract build URL
+          BUILD_URL=$(grep -o 'https://percy.io/[^[:space:]]*' percy_output.txt || echo "")
+          echo "build-url=$BUILD_URL" >> $GITHUB_OUTPUT
+          
+          # Set status based on exit code (keeping your original logic)
+          if [ "${PERCY_EXIT_CODE:-0}" -eq 2 ]; then
+            echo "status=changes-detected" >> $GITHUB_OUTPUT
+            echo "✅ Percy completed with visual changes detected"
+          elif [ "${PERCY_EXIT_CODE:-0}" -eq 1 ]; then
+            echo "status=error" >> $GITHUB_OUTPUT
+            echo "❌ Percy encountered an error"
+            exit 1
+          else
+            echo "status=no-changes" >> $GITHUB_OUTPUT
+            echo "✅ Percy completed with no changes"
+          fi
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+          PERCY_BRANCH: ${{ github.head_ref }}
+          PERCY_TARGET_BRANCH: main
+
+      # 🔄 CHANGED: Update status detection logic
+      - name: Check Percy Results
+        id: percy-status
+        run: |
+          # The Percy action sets outputs we can use
+          if [ "${{ steps.percy.outcome }}" = "success" ]; then
+            # Percy action succeeded, but we need to check if there were visual changes
+            # The action doesn't provide this info directly, so we'll set a default
+            echo "status=completed-successfully" >> $GITHUB_OUTPUT
+            echo "✅ Percy completed successfully"
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+            echo "❌ Percy encountered an error"
+            exit 1
+          fi
+
+      # 🔄 CHANGED: Simplified labeling (since we can't easily detect changes vs no-changes)
+      - name: Add Percy review label
+        if: steps.percy.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['percy-tested']
+            });
+
+      - name: Comment on PR with Percy results
+        if: steps.percy.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 👀 Percy Visual Testing Complete
+            
+            Percy has successfully run visual tests on this PR.
+            
+            🔍 **[View Results in Percy Dashboard](https://percy.io/)**
+            
+            ### Next Steps:
+            - Check the Percy dashboard for any visual changes
+            - If changes are detected, review and approve them
+            - This PR has been labeled with \`percy-tested\` for tracking
+            
+            _Note: If visual changes were detected, they'll appear in your Percy dashboard for review._`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Comment on PR with error
+        if: steps.percy.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## ❌ Percy Visual Testing Failed
+            
+            Percy encountered an error while running visual tests. Please check the workflow logs for details.
+            
+            This needs to be fixed before the PR can be merged.`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
