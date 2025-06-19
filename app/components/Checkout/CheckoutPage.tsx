@@ -193,7 +193,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               <span className="sr-only">Your Company</span>
               <img
                 alt=""
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                src="https://www.svgrepo.com/show/354175/percy-icon.svg"
                 className="h-8 w-auto"
               />
             </a>
