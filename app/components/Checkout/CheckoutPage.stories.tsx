@@ -53,7 +53,7 @@ export const Original: Story = {
     showPromoBadge: false,
     baseFontSize: 'base',
     themeColor: 'indigo',
-    locale: 'en',
+    locale: 'fr',
     useWrapper: true,
   },
   parameters: {
